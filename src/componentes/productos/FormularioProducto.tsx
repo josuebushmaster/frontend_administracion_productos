@@ -9,12 +9,16 @@ import {
   Box,
   InputAdornment,
   CircularProgress,
+  Typography,
 } from '@mui/material';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { productoEsquema, valoresPorDefecto } from '../../validaciones/productoEsquema';
 import type { ProductoFormulario } from '../../validaciones/productoEsquema';
 import type { Producto } from '../../tipos/producto';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
+import EditNoteIcon from '@mui/icons-material/EditNote';
+import SaveIcon from '@mui/icons-material/Save';
 
 interface FormularioProductoProps {
   abierto: boolean;
@@ -89,14 +93,44 @@ export function FormularioProducto({
       PaperProps={{
         component: 'form',
         onSubmit: handleSubmit(manejarEnvio),
+        className: 'animate-fade-in',
       }}
     >
-      <DialogTitle>
-        {esEdicion ? 'Editar Producto' : 'Nuevo Producto'}
+      <DialogTitle className="pb-2">
+        <Box className="flex items-center gap-3">
+          <Box 
+            className="w-12 h-12 rounded-xl flex items-center justify-center"
+            sx={{
+              background: esEdicion 
+                ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
+                : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+              boxShadow: esEdicion 
+                ? '0 4px 14px rgba(245, 158, 11, 0.3)'
+                : '0 4px 14px rgba(59, 130, 246, 0.3)',
+            }}
+          >
+            {esEdicion ? (
+              <EditNoteIcon className="text-white" />
+            ) : (
+              <AddCircleOutlineIcon className="text-white" />
+            )}
+          </Box>
+          <Box>
+            <Typography variant="h5" className="font-bold">
+              {esEdicion ? 'Editar Producto' : 'Nuevo Producto'}
+            </Typography>
+            <Typography variant="body2" className="text-slate-500">
+              {esEdicion 
+                ? 'Modifica los datos del producto'
+                : 'Completa los datos para agregar un nuevo producto'
+              }
+            </Typography>
+          </Box>
+        </Box>
       </DialogTitle>
       
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+      <DialogContent className="pt-4">
+        <Box className="flex flex-col gap-5 pt-2">
           <Controller
             name="name"
             control={control}
@@ -109,46 +143,55 @@ export function FormularioProducto({
                 helperText={errors.name?.message}
                 disabled={estaCargando}
                 autoFocus
+                placeholder="Ej: Laptop Gaming Pro"
               />
             )}
           />
 
-          <Controller
-            name="price"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Precio"
-                type="number"
-                fullWidth
-                error={!!errors.price}
-                helperText={errors.price?.message}
-                disabled={estaCargando}
-                slotProps={{
-                  input: {
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                  },
-                }}
-                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-              />
-            )}
-          />
+          <Box className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Controller
+              name="price"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Precio"
+                  type="number"
+                  fullWidth
+                  error={!!errors.price}
+                  helperText={errors.price?.message}
+                  disabled={estaCargando}
+                  placeholder="0.00"
+                  slotProps={{
+                    input: {
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <span className="text-slate-400 font-medium">$</span>
+                        </InputAdornment>
+                      ),
+                    },
+                  }}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                />
+              )}
+            />
 
-          <Controller
-            name="category"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                {...field}
-                label="Categoría"
-                fullWidth
-                error={!!errors.category}
-                helperText={errors.category?.message}
-                disabled={estaCargando}
-              />
-            )}
-          />
+            <Controller
+              name="category"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label="Categoría"
+                  fullWidth
+                  error={!!errors.category}
+                  helperText={errors.category?.message}
+                  disabled={estaCargando}
+                  placeholder="Ej: Electrónica"
+                />
+              )}
+            />
+          </Box>
 
           <Controller
             name="description"
@@ -163,6 +206,7 @@ export function FormularioProducto({
                 error={!!errors.description}
                 helperText={errors.description?.message}
                 disabled={estaCargando}
+                placeholder="Describe las características principales del producto..."
               />
             )}
           />
@@ -176,19 +220,30 @@ export function FormularioProducto({
                 label="URL de imagen (opcional)"
                 fullWidth
                 error={!!errors.image}
-                helperText={errors.image?.message || 'Ejemplo: https://ejemplo.com/imagen.jpg'}
+                helperText={errors.image?.message || 'Proporciona un enlace a la imagen del producto'}
                 disabled={estaCargando}
+                placeholder="https://ejemplo.com/imagen.jpg"
               />
             )}
           />
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, pb: 2 }}>
+      <DialogActions className="px-6 pb-6 pt-4 gap-3">
         <Button 
           onClick={manejarCerrar} 
           disabled={estaCargando}
-          color="inherit"
+          variant="outlined"
+          sx={{
+            borderRadius: '12px',
+            px: 3,
+            borderColor: '#e2e8f0',
+            color: '#64748b',
+            '&:hover': {
+              borderColor: '#cbd5e1',
+              backgroundColor: '#f8fafc',
+            },
+          }}
         >
           Cancelar
         </Button>
@@ -196,9 +251,24 @@ export function FormularioProducto({
           type="submit" 
           variant="contained"
           disabled={estaCargando}
-          startIcon={estaCargando ? <CircularProgress size={20} /> : null}
+          startIcon={estaCargando ? <CircularProgress size={20} color="inherit" /> : <SaveIcon />}
+          sx={{
+            borderRadius: '12px',
+            px: 4,
+            background: esEdicion
+              ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)'
+              : 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+            boxShadow: esEdicion
+              ? '0 4px 14px rgba(245, 158, 11, 0.4)'
+              : '0 4px 14px rgba(59, 130, 246, 0.4)',
+            '&:hover': {
+              background: esEdicion
+                ? 'linear-gradient(135deg, #d97706 0%, #f59e0b 100%)'
+                : 'linear-gradient(135deg, #2563eb 0%, #7c3aed 100%)',
+            },
+          }}
         >
-          {estaCargando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear')}
+          {estaCargando ? 'Guardando...' : (esEdicion ? 'Actualizar' : 'Crear Producto')}
         </Button>
       </DialogActions>
     </Dialog>
